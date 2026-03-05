@@ -9,29 +9,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Fix folder structure
+      - name: Check and fix folder structure
         run: |
-          # 进入 mobile-app 子目录（你的项目在这里）
+          echo "当前目录："
+          ls -la
+          
+          # 如果 mobile-app 存在，移动所有文件到根目录
           if [ -d "mobile-app" ]; then
+            echo "发现 mobile-app 文件夹，正在移动文件..."
             mv mobile-app/* ./
             mv mobile-app/.* ./ 2>/dev/null || true
             rmdir mobile-app 2>/dev/null || true
+            echo "移动完成："
+            ls -la
           fi
-          ls -la
-
 
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
 
-      # 直接安装依赖，不用 Expo
       - name: Install dependencies
         run: npm install
 
-      # 使用 Gradle 直接编译 APK
       - name: Build APK with Gradle
         run: |
           cd android
+          chmod +x gradlew
           ./gradlew assembleRelease
 
       - name: Upload APK
