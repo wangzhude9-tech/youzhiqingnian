@@ -1,7 +1,7 @@
 name: Build Android APK
 
 on: 
-  workflow_dispatch:  # 手动触发
+  workflow_dispatch:
 
 jobs:
   build:
@@ -9,31 +9,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      # 如果代码在子文件夹里，自动移动到根目录
       - name: Fix folder structure
         run: |
-          ls -la
-          # 如果代码在 mobile-app 文件夹里
-          if [ -d "mobile-app" ]; then
-            mv mobile-app/* ./
-            mv mobile-app/.* ./ 2>/dev/null || true
+          if [ -d "kimi_agent_react"* ]; then
+            mv kimi_agent_react*/* ./
           fi
-          # 如果是 zip 文件，解压它
-          if [ -f "*.zip" ]; then
-            unzip *.zip
-          fi
-          
+
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
-          
-      - name: Setup Expo
-        uses: expo/expo-github-action@v8
-        with:
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
-          
-      - name: Install and Build
+
+      # 直接安装依赖，不用 Expo
+      - name: Install dependencies
+        run: npm install
+
+      # 使用 Gradle 直接编译 APK
+      - name: Build APK with Gradle
         run: |
-          npm install
-          eas build --platform android --profile preview --non-interactive
+          cd android
+          ./gradlew assembleRelease
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: android/app/build/outputs/apk/release/app-release-unsigned.apk
