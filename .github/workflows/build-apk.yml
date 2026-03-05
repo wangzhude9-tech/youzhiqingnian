@@ -11,9 +11,14 @@ jobs:
       
       - name: Fix folder structure
         run: |
-          if [ -d "kimi_agent_react"* ]; then
-            mv kimi_agent_react*/* ./
+          # 进入 mobile-app 子目录（你的项目在这里）
+          if [ -d "mobile-app" ]; then
+            mv mobile-app/* ./
+            mv mobile-app/.* ./ 2>/dev/null || true
+            rmdir mobile-app 2>/dev/null || true
           fi
+          ls -la
+
 
       - uses: actions/setup-node@v4
         with:
